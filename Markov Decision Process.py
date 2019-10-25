@@ -68,7 +68,7 @@ def choose_next(statename, state_dict):
 
 # Calculate the total return of the completed trace
 def calc_tot_return(path):
-    gamma = 0.5
+    gamma = 1
     tot_ret = 0
     i = 0
     for x, y in path:
@@ -101,44 +101,62 @@ def calc_state_return(path, s_val_arr):
     return s_val_arr
 
 
-# Initial conditions
-starts = 0
-init_s = search_state(state_space, starts)       # Start state name
-ends = 4                                         # End state ID
-endit_s = search_state(state_space, ends)        # End state name
+# Calculate the state value
+def calc_state_val():
 
-path_trace = [(init_s, imm_reward(init_s))]
-state_value = np.zeros(7)
-curr_node = init_s
-step = 0
-state_return = np.zeros(7)
+    return st_values
 
-print('The current episode is set to start at node {} and end at node {}. '.format(init_s, endit_s))
 
-repeats = input('How many traces do you want to average? :')
+# Simulate trace with parameters
+def sample_trace(starts, repeats, state_space):
+    init_s = search_state(state_space, starts)       # Start state name
+    ends = 4                                         # End state ID
+    endit_s = search_state(state_space, ends)        # End state name
 
-for a in range(int(repeats)):
-    # Simulating a trace
-    while curr_node != endit_s:
-        path_trace.append(choose_next(curr_node, state_space))
-        step += 1
-        curr_node = path_trace[step][0]
-
-    # Printing the trace
-    print('The path taken is:')
-    for name, reward in path_trace:
-        print('Node: {}, Reward: {}'.format(name, reward))
-
-    # Evaluating total return
-    total_return = calc_tot_return(path_trace)
-    state_return = np.add(state_return, calc_state_return(path_trace, state_value))
-    print(total_return)
-    del path_trace[:]
-    del state_value
     path_trace = [(init_s, imm_reward(init_s))]
     state_value = np.zeros(7)
     curr_node = init_s
     step = 0
+    state_return = np.zeros(7)
+    total_return = 0
 
-state_return = np.true_divide(state_return, float(repeats))
-print(state_return)
+    print('The current episode is set to start at node {} and end at node {}. '.format(init_s, endit_s))
+
+    for a in range(int(repeats)):
+        # Simulating a trace
+        while curr_node != endit_s:
+            path_trace.append(choose_next(curr_node, state_space))
+            step += 1
+            curr_node = path_trace[step][0]
+
+        # Printing the trace
+        # print('The path taken is:')
+        # for name, reward in path_trace:
+        #    print('Node: {}, Reward: {}'.format(name, reward))
+
+        # Evaluating total return
+        total_return += calc_tot_return(path_trace)
+        state_return = np.add(state_return, calc_state_return(path_trace, state_value))
+        del path_trace[:]
+        del state_value
+        path_trace = [(init_s, imm_reward(init_s))]
+        state_value = np.zeros(7)
+        curr_node = init_s
+        step = 0
+
+    # state_return = np.true_divide(state_return, float(repeats))
+    total_return = total_return/repeats
+
+    return starts, total_return
+
+
+# Using law of large numbers - a rough estimate of the true value function for a state can be achieved by sampling many
+# trajectories starting from that state, and averaging the sampled returns
+
+# Simulating a trace and printing
+repeat_no = 20000
+state_values_approx = []
+for s in range(7):
+    state_values_approx.append(sample_trace(s, 20000, state_space))
+    print(np.round(state_values_approx[s][1], 1))
+
