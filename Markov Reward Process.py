@@ -1,7 +1,7 @@
 import numpy as np
 import random as rm
 
-# Basic Markov Decision Process Implementation - The Student MRP
+# Basic Markov Reward Process Implementation - The Student MRP
 # Reinforcement Learning Lab
 
 
@@ -99,13 +99,6 @@ def calc_state_return(path, s_val_arr):
         i += 1
     s_val_arr = np.true_divide(s_val_arr, n_visits, where=n_visits!=0)
     return s_val_arr
-
-
-# Calculate the state value
-def calc_state_val():
-
-    return st_values
-
 
 # Simulate trace with parameters
 def sample_trace(starts, repeats, state_space):
